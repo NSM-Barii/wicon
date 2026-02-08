@@ -1,0 +1,9 @@
+# TO DO LIST FOR WHAT IS NEEDING SO FAR
+
+
+Vendor
+Channel
+Frequency
+Rssi
+
+master variable
