@@ -33,6 +33,9 @@ class WiFi_Snatcher():
     """This class will be responsible for grabbing surrounding layer 2 traffic <-- snatch"""
 
 
+    master = {}
+
+
 
     @classmethod
     def _sniffer(cls, iface, timeout=5, verbose=False):
@@ -162,6 +165,9 @@ class WiFi_Snatcher():
                             
                             cls.master[ssid]["clients"].append(data)
                             cls.macs.append(addr1)
+
+
+                            console.print(f"[bold green][+] {addr1} -> ")
                         
 
                         
@@ -175,8 +181,11 @@ class WiFi_Snatcher():
                             
                             cls.master[ssid]["clients"].append(data)
                             cls.macs.append(addr2)
-                           
-                        console.print(cls.master)
+
+
+                            console.print(f"[bold green][+] {addr2} -> ")
+                        
+                            #console.print(cls.master)
                     
 
                     except Exception as e: console.print(f"[bold red][-] GO Error: {e}"); cls.sniff = False
@@ -205,7 +214,9 @@ class WiFi_Snatcher():
          
         if not iface: console.print(f"[bold red][-] Enter a iface goofy!")
         Utilities.channel_hopper(iface="wlan1", verbose=False)
-        WiFi_Snatcher._sniffer(iface=iface)
+        threading.Thread(target=WiFi_Snatcher._sniffer, args=(iface, ), daemon=True).start()
+        from nsm_server import Web_Server
+        Web_Server.start()
 
 
 

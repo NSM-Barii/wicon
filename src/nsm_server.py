@@ -35,20 +35,21 @@ class HTTP_Handler(SimpleHTTPRequestHandler):
 
         from nsm_rat import WiFi_Snatcher
 
+        try:
+            if self.path == "/api/devices":
 
-        if self.path == "/api/devices":
+                self.send_response(200)
+                self.send_header("content-type", "application/json")
+                self.send_header("Access-Control-Allow-Origin", '*')
+                self.end_headers()
 
-            self.send_response(200)
-            self.send_header("content-type", "application/json")
-            self.send_header("Access-Control-Allow-Origin", '*')
-            self.end_headers()
+                self.wfile.write(json.dumps(WiFi_Snatcher.master).encode())
 
-            self.wfile.write(json.dumps(WiFi_Snatcher.master).encode())
-
-        else:
-            # Serve static files from gui directory
-            super().do_GET()
-
+            else:
+                # Serve static files from gui directory
+                super().do_GET()
+        
+        except Exception as e: CONSOLE.print(f"[bold red][-] Exception Error:[bold yellow] {e}")
 
 
 
@@ -60,10 +61,26 @@ class Web_Server():
 
 
     @staticmethod
-    def start(address, port):
+    def start(address="0.0.0.0", port=8000):
         """This will start the web server"""
 
         server = HTTPServer(server_address=(address, port), RequestHandlerClass=HTTP_Handler)
         CONSOLE.print(f"[bold green][+] Successfully Launched web server")
         CONSOLE.print(f"[bold green][+] Starting Web_Server on:[bold yellow] http://localhost:{port}")
         server.serve_forever(poll_interval=2)
+
+
+
+"""
+
+
+ I am getting this error below in the system log of the website and its also not loading any of the info 
+
+
+ [00:00:00] System initialized successfully
+[23:53:15] Application initialized successfully
+[23:53:15] Failed to load devices: devices.forEach is not a function
+[23:53:20] Failed to load devices: devices.forEach is not a function
+[23:53:25] Failed to load devices: devices.forEach is not a function 
+
+"""
