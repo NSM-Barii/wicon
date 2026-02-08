@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NSM Wi-Fi Intelligence Console</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <!-- Matrix background effect -->
+    <canvas id="matrix-bg"></canvas>
+
+    <!-- Scanline effect -->
+    <div class="scanline"></div>
+
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <div class="logo-section">
+                    <span class="logo-icon">█▓▒░</span>
+                    <h1 class="title">NSM WICON</h1>
+                    <span class="subtitle">// Wi-Fi Intelligence Console</span>
+                </div>
+                <div class="status-bar">
+                    <span class="status-item">
+                        <span class="status-label">STATUS:</span>
+                        <span class="status-value" id="connection-status">INITIALIZING</span>
+                    </span>
+                    <span class="status-item">
+                        <span class="status-label">DEVICES:</span>
+                        <span class="status-value" id="device-count">0</span>
+                    </span>
+                    <span class="status-item">
+                        <span class="status-label">UPTIME:</span>
+                        <span class="status-value" id="uptime">00:00:00</span>
+                    </span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main content -->
+        <main class="main-content">
+            <!-- Terminal window -->
+            <section class="terminal-window">
+                <div class="terminal-header">
+                    <div class="terminal-buttons">
+                        <span class="btn-close"></span>
+                        <span class="btn-minimize"></span>
+                        <span class="btn-maximize"></span>
+                    </div>
+                    <div class="terminal-title">root@nsm:~#</div>
+                </div>
+                <div class="terminal-body" id="terminal">
+                    <div class="terminal-line">
+                        <span class="prompt">root@nsm:~$</span>
+                        <span class="command">./wicon --start</span>
+                    </div>
+                    <div class="terminal-line">
+                        <span class="output">[+] Initializing Wi-Fi Intelligence Console...</span>
+                    </div>
+                    <div class="terminal-line">
+                        <span class="output">[+] Loading network modules...</span>
+                    </div>
+                    <div class="terminal-line">
+                        <span class="output success">[+] System online</span>
+                    </div>
+                    <div class="terminal-line typing">
+                        <span class="prompt">root@nsm:~$</span>
+                        <span class="cursor">_</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Stats Grid -->
+            <section class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon">📡</div>
+                    <div class="stat-info">
+                        <div class="stat-label">TOTAL SCANS</div>
+                        <div class="stat-value" id="total-scans">0</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">🔐</div>
+                    <div class="stat-info">
+                        <div class="stat-label">SECURED</div>
+                        <div class="stat-value" id="secured-count">0</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">🔓</div>
+                    <div class="stat-info">
+                        <div class="stat-label">OPEN</div>
+                        <div class="stat-value" id="open-count">0</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">⚡</div>
+                    <div class="stat-info">
+                        <div class="stat-label">SIGNAL AVG</div>
+                        <div class="stat-value" id="avg-signal">0 dBm</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Devices Table -->
+            <section class="devices-section">
+                <div class="section-header">
+                    <h2 class="section-title">
+                        <span class="blink">▸</span> DETECTED DEVICES
+                    </h2>
+                    <button class="btn-refresh" id="refresh-btn">
+                        <span>↻</span> REFRESH
+                    </button>
+                </div>
+
+                <div class="table-container">
+                    <table class="devices-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>SSID</th>
+                                <th>BSSID</th>
+                                <th>CHANNEL</th>
+                                <th>SIGNAL</th>
+                                <th>SECURITY</th>
+                                <th>FREQUENCY</th>
+                                <th>STATUS</th>
+                            </tr>
+                        </thead>
+                        <tbody id="devices-tbody">
+                            <tr class="loading-row">
+                                <td colspan="8">
+                                    <div class="loading">
+                                        <span class="loading-text">SCANNING FOR DEVICES</span>
+                                        <span class="loading-dots">...</span>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- System Log -->
+            <section class="log-section">
+                <div class="section-header">
+                    <h2 class="section-title">
+                        <span class="blink">▸</span> SYSTEM LOG
+                    </h2>
+                    <button class="btn-clear" id="clear-log-btn">CLEAR</button>
+                </div>
+                <div class="log-container" id="log-container">
+                    <div class="log-entry info">
+                        <span class="log-time">[00:00:00]</span>
+                        <span class="log-message">System initialized successfully</span>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <div class="footer-content">
+                <span>NSM WICON v1.0</span>
+                <span>|</span>
+                <span>Network Security Monitoring</span>
+                <span>|</span>
+                <span class="pulse">● ACTIVE</span>
+            </div>
+        </footer>
+    </div>
+
+    <script src="js/matrix.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
