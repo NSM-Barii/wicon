@@ -80,7 +80,8 @@ class WiFi_Snatcher():
             # ADDR1 == DST
             # ADDR2 == SRC
             # ADDR3 == SRC
-
+            
+            if not cls.sniff: return
 
 
             if pkt.haslayer(Dot11Beacon):
@@ -97,7 +98,7 @@ class WiFi_Snatcher():
 
 
 
-                    if ssid:
+                    if cls.hide:
                         t = [s for s in ssid]
                         if len(t) > 4: 
                             ssid = (f"{t[0]}{t[1]}{t[2]}{t[3]}")
@@ -132,17 +133,17 @@ class WiFi_Snatcher():
                 except Exception as e: console.print(f"[bold red]Exception Error:[bold yellow] {e}")
             
 
-                if ssid:
+                if cls.hide:
                     t = [s for s in ssid]
                     if len(t) >= 4: 
                         ssid = (f"{t[0]}{t[1]}{t[2]}{t[3]}")
-                
-                    for key, _ in cls.master.items():
+            
+                for key, _ in cls.master.items():
 
-                        if key == ssid: go = True
-                
-                    if not go: return
-                
+                    if key == ssid: go = True
+            
+                if not go: return
+            
 
                 vendor  = DataBase_WiFi.get_vendor_main(mac=addr1 or addr2)
                 channel = DataBase_WiFi.get_channel(pkt=pkt)
@@ -192,6 +193,7 @@ class WiFi_Snatcher():
 
 
         # VARS
+        cls.hide = False
         cls.thread_count = 0
         cls.sniff = True
         cls.macs = []
