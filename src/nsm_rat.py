@@ -16,6 +16,7 @@ from scapy.layers.dot11 import Dot11, Dot11Beacon, Dot11AssoReq, Dot11ProbeReq, 
 
 # ETC IMPORTS 
 import time, threading
+from concurrent.futures import ThreadPoolExecutor
 
 
 # NSM IMPORTS
@@ -153,7 +154,7 @@ class WiFi_Snatcher():
                         if addr1 not in cls.macs and addr1 and ssid:
                                 
                             data = (
-                                addr2,
+                                addr1,
                                 channel,
                                 vendor,
                             )
@@ -180,7 +181,7 @@ class WiFi_Snatcher():
                     except Exception as e: console.print(f"[bold red][-] GO Error: {e}"); cls.sniff = False
 
 
-        threading.Thread(target=parser, args=(pkt,), daemon=True).start(); cls.thread_count += 1
+        cls.executor.submit(parser, pkt); cls.thread_count += 1
 
                 
     
@@ -196,6 +197,7 @@ class WiFi_Snatcher():
         cls.macs = []
         cls.ssids = []
         cls.master = {}
+        cls.executor = ThreadPoolExecutor(max_workers=10)
     
  
          
