@@ -59,12 +59,27 @@ class WiConApp {
             }
 
             const data = await response.json();
-            this.devices = data;
+
+            // Convert dictionary to array
+            // data is an object with SSIDs as keys: {ssid: {mac, channel, vendor, rssi, clients}}
+            const devicesArray = Object.entries(data).map(([ssid, info]) => ({
+                ssid: ssid,
+                bssid: info.mac,
+                channel: info.channel,
+                signal: info.rssi,
+                vendor: info.vendor,
+                clients: info.clients,
+                frequency: info.channel ? (info.channel <= 14 ? '2.4 GHz' : '5 GHz') : 'N/A',
+                security: 'WPA2', // Default, can be updated if available
+                status: 'ACTIVE'
+            }));
+
+            this.devices = devicesArray;
 
             this.updateConnectionStatus('ONLINE');
-            this.updateDeviceCount(data.length);
-            this.updateStats(data);
-            this.renderDevices(data);
+            this.updateDeviceCount(devicesArray.length);
+            this.updateStats(devicesArray);
+            this.renderDevices(devicesArray);
 
         } catch (error) {
             console.error('Error loading devices:', error);
