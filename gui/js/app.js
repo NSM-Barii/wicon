@@ -70,7 +70,7 @@ class WiConApp {
             }
 
             // Convert dictionary to array
-            // data is an object with SSIDs as keys: {ssid: {mac, channel, vendor, rssi, clients}}
+            // data is an object with SSIDs as keys: {ssid: {mac, channel, vendor, rssi, encryption, frequency, clients}}
             const devicesArray = Object.entries(data).map(([ssid, info]) => ({
                 ssid: ssid,
                 bssid: info.mac,
@@ -78,8 +78,8 @@ class WiConApp {
                 signal: info.rssi,
                 vendor: info.vendor,
                 clients: info.clients,
-                frequency: info.channel ? (info.channel <= 14 ? '2.4 GHz' : '5 GHz') : 'N/A',
-                security: 'WPA2', // Default, can be updated if available
+                frequency: info.frequency || 'N/A',
+                security: info.encryption || 'OPEN',
                 status: 'ACTIVE'
             }));
 
@@ -163,6 +163,8 @@ class WiConApp {
 
         devices.forEach((device, index) => {
             const row = document.createElement('tr');
+            row.className = 'device-row';
+            row.dataset.index = index;
 
             // Extract device data with fallbacks
             const ssid = device.ssid || device.name || 'Hidden Network';
@@ -171,6 +173,7 @@ class WiConApp {
             const signal = device.signal || device.rssi || 'N/A';
             const security = device.security || device.encryption || 'OPEN';
             const frequency = device.frequency || device.freq || 'N/A';
+            const clients = device.clients || [];
 
             // Determine signal strength class
             let signalClass = 'signal-weak';
@@ -181,28 +184,82 @@ class WiConApp {
                 signalClass = 'signal-medium';
             }
 
-            // Determine status
-            const status = device.status || 'ACTIVE';
-            const statusClass = status === 'ACTIVE' ? 'status-active' : 'status-idle';
-
             row.innerHTML = `
-                <td>${String(index + 1).padStart(3, '0')}</td>
+                <td class="expand-cell">
+                    ${clients.length > 0 ? '<span class="expand-icon">▸</span>' : ''}
+                </td>
                 <td><strong>${this.escapeHtml(ssid)}</strong></td>
                 <td><code>${this.escapeHtml(bssid)}</code></td>
                 <td>${this.escapeHtml(channel)}</td>
                 <td class="${signalClass}">${this.escapeHtml(signal)} dBm</td>
                 <td>${this.escapeHtml(security)}</td>
                 <td>${this.escapeHtml(frequency)}</td>
-                <td><span class="status-badge ${statusClass}">${status}</span></td>
+                <td><span class="client-count">${clients.length}</span></td>
             `;
 
             // Add fade-in animation
             row.style.animation = `fadeIn 0.5s ease ${index * 0.05}s both`;
 
+            // Add click handler for expandable rows
+            if (clients.length > 0) {
+                row.style.cursor = 'pointer';
+                row.addEventListener('click', () => this.toggleClientRow(index, device));
+            }
+
             tbody.appendChild(row);
         });
 
         this.addLog('success', `Loaded ${devices.length} device(s)`);
+    }
+
+    // Toggle client details row
+    toggleClientRow(index, device) {
+        const tbody = document.getElementById('devices-tbody');
+        const deviceRow = tbody.querySelector(`tr[data-index="${index}"]`);
+        const existingClientRow = tbody.querySelector(`tr[data-client-for="${index}"]`);
+        const expandIcon = deviceRow.querySelector('.expand-icon');
+
+        if (existingClientRow) {
+            // Collapse
+            existingClientRow.remove();
+            if (expandIcon) expandIcon.textContent = '▸';
+        } else {
+            // Expand
+            if (expandIcon) expandIcon.textContent = '▾';
+
+            const clientRow = document.createElement('tr');
+            clientRow.className = 'client-details-row';
+            clientRow.dataset.clientFor = index;
+
+            const clients = device.clients || [];
+            let clientsHtml = '<div class="clients-container">';
+
+            if (clients.length === 0) {
+                clientsHtml += '<div class="no-clients">No clients detected</div>';
+            } else {
+                clientsHtml += '<table class="clients-table"><thead><tr><th>MAC</th><th>CHANNEL</th><th>VENDOR</th></tr></thead><tbody>';
+                clients.forEach(client => {
+                    const mac = Array.isArray(client) ? client[0] : (client.mac || 'N/A');
+                    const channel = Array.isArray(client) ? client[1] : (client.channel || 'N/A');
+                    const vendor = Array.isArray(client) ? client[2] : (client.vendor || 'Unknown');
+
+                    clientsHtml += `
+                        <tr>
+                            <td><code>${this.escapeHtml(mac)}</code></td>
+                            <td>${this.escapeHtml(channel)}</td>
+                            <td>${this.escapeHtml(vendor)}</td>
+                        </tr>
+                    `;
+                });
+                clientsHtml += '</tbody></table>';
+            }
+            clientsHtml += '</div>';
+
+            clientRow.innerHTML = `<td colspan="8">${clientsHtml}</td>`;
+
+            // Insert after the device row
+            deviceRow.insertAdjacentElement('afterend', clientRow);
+        }
     }
 
     // Show empty state

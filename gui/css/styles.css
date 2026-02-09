@@ -408,6 +408,90 @@ body {
 .signal-medium { color: var(--warning); }
 .signal-weak { color: var(--danger); }
 
+.expand-cell {
+    width: 30px;
+    text-align: center;
+}
+
+.expand-icon {
+    color: var(--primary-green);
+    font-size: 1.2em;
+    transition: transform 0.3s ease;
+    display: inline-block;
+}
+
+.client-count {
+    display: inline-block;
+    background: rgba(0, 255, 65, 0.2);
+    color: var(--primary-green);
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 0.9em;
+    border: 1px solid var(--primary-green);
+}
+
+.client-details-row {
+    background: var(--bg-darker) !important;
+}
+
+.client-details-row td {
+    padding: 0 !important;
+    border: none !important;
+}
+
+.clients-container {
+    padding: 20px;
+    animation: slideDown 0.3s ease;
+}
+
+.clients-table {
+    width: 100%;
+    margin: 10px auto;
+    max-width: 800px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.clients-table thead {
+    background: var(--bg-black);
+}
+
+.clients-table th {
+    padding: 10px;
+    text-align: left;
+    color: var(--text-dim);
+    font-size: 0.85em;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.clients-table td {
+    padding: 8px 10px;
+    color: var(--text-secondary);
+    border-bottom: 1px solid rgba(31, 110, 61, 0.3);
+}
+
+.clients-table tbody tr:hover {
+    background: rgba(0, 255, 65, 0.05);
+}
+
+.no-clients {
+    text-align: center;
+    padding: 20px;
+    color: var(--text-dim);
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        max-height: 0;
+    }
+    to {
+        opacity: 1;
+        max-height: 500px;
+    }
+}
+
 /* Log Section */
 .log-section {
     background: var(--bg-dark);
