@@ -107,7 +107,7 @@ class WiFi_Snatcher():
                             ssid = (f"{t[0]}{t[1]}{t[2]}{t[3]}")
                 
 
-                except Exception as e: console.print(f"[bold red][-] Parse Error:[bold yelow] {e}")
+                except Exception as e: console.print(f"[bold red][-] Parse Error:[bold yelow] {e}"); cls.sniff = False  
                 
 
                 try:
@@ -167,7 +167,7 @@ class WiFi_Snatcher():
                             cls.macs.append(addr1)
 
 
-                            console.print(f"[bold green][+] {addr1} -> ")
+                            console.print(f"[bold green][+] addr1: {addr1} -> ")
                         
 
                         
@@ -183,14 +183,15 @@ class WiFi_Snatcher():
                             cls.macs.append(addr2)
 
 
-                            console.print(f"[bold green][+] {addr2} -> ")
+                            console.print(f"[bold green][+] addr2: {addr2} -> ")
                         
                             #console.print(cls.master)
                     
 
                     except Exception as e: console.print(f"[bold red][-] GO Error: {e}"); cls.sniff = False
 
-
+ 
+        if not cls.sniff: return Exception 
         cls.executor.submit(parser, pkt); cls.thread_count += 1
 
                 
