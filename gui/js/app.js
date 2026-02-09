@@ -60,6 +60,15 @@ class WiConApp {
 
             const data = await response.json();
 
+            // Check if data is empty or not an object
+            if (!data || typeof data !== 'object' || Object.keys(data).length === 0) {
+                this.updateConnectionStatus('SCANNING');
+                this.updateDeviceCount(0);
+                this.updateStats([]);
+                this.showEmptyState();
+                return;
+            }
+
             // Convert dictionary to array
             // data is an object with SSIDs as keys: {ssid: {mac, channel, vendor, rssi, clients}}
             const devicesArray = Object.entries(data).map(([ssid, info]) => ({
