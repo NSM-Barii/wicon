@@ -33,10 +33,7 @@ class WiFi_Snatcher():
     """This class will be responsible for grabbing surrounding layer 2 traffic <-- snatch"""
 
 
-    master = {}
-
-
-
+ 
     @classmethod
     def _sniffer(cls, iface, timeout=5, verbose=False):
         """This will sniff frames out the air"""
@@ -203,12 +200,12 @@ class WiFi_Snatcher():
 
 
         # VARS
+        cls.master = {}
         cls.hide = False
         cls.thread_count = 0
         cls.sniff = True
         cls.macs = []
         cls.ssids = []
-        cls.master = {}
         cls.executor = ThreadPoolExecutor(max_workers=10)
     
  
@@ -216,8 +213,6 @@ class WiFi_Snatcher():
         if not iface: console.print(f"[bold red][-] Enter a iface goofy!")
         Utilities.channel_hopper(iface="wlan1", verbose=False)
         threading.Thread(target=WiFi_Snatcher._sniffer, args=(iface, ), daemon=True).start()
-        from nsm_server import Web_Server
-        Web_Server.start()
 
 
 

@@ -12,6 +12,10 @@ from pathlib import Path
 import os, json
 
 
+# NSM IMPORTS
+from nsm_rat import WiFi_Snatcher
+
+
 CONSOLE = Console()
 
 
@@ -19,11 +23,6 @@ CONSOLE = Console()
 
 class HTTP_Handler(SimpleHTTPRequestHandler):
     """This class will handle/server http traffic"""
-
-    def __init__(self, *args, **kwargs):
-        # Set the directory to serve files from
-        gui_path = str(Path(__file__).parent.parent / "gui")
-        super().__init__(*args, directory=gui_path, **kwargs)
 
 
     def log_message(self, fmt, *args):
@@ -33,7 +32,7 @@ class HTTP_Handler(SimpleHTTPRequestHandler):
     def do_GET(self) -> None:
         """This will handle basic web server requests"""
 
-        import nsm_rat
+
 
         try:
             if self.path == "/api/devices":
@@ -43,7 +42,8 @@ class HTTP_Handler(SimpleHTTPRequestHandler):
                 self.send_header("Access-Control-Allow-Origin", '*')
                 self.end_headers()
 
-                data = nsm_rat.WiFi_Snatcher.master
+                data = WiFi_Snatcher.master
+                CONSOLE.print(data)
                 self.wfile.write(json.dumps(data).encode())
 
             else:
@@ -69,6 +69,8 @@ class Web_Server():
         CONSOLE.print(f"[bold green][+] Successfully Launched web server")
         CONSOLE.print(f"[bold green][+] Starting Web_Server on:[bold yellow] http://localhost:{port}")
         server.serve_forever(poll_interval=2)
+
+
 
 
 
