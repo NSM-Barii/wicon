@@ -10,7 +10,7 @@ import pyfiglet
 
 
 # NETWORK IMPORTS
-from scapy.all import sniff
+from scapy.all import sniff, RadioTap
 from scapy.layers.dot11 import Dot11, Dot11Beacon, Dot11AssoReq, Dot11ProbeReq, Dot11Elt
 
 
@@ -91,10 +91,12 @@ class WiFi_Snatcher():
                     addr1 = pkt[Dot11].addr1 if pkt[Dot11].addr1 != "ff:ff:ff:ff:ff:ff" else False
                     addr2 = pkt[Dot11].addr2 if pkt[Dot11].addr2 != "ff:ff:ff:ff:ff:ff" else False
 
-                    ssid    = pkt[Dot11Elt].info.decode(errors="ignore") or "Hidden SSID"
-                    vendor  = DataBase_WiFi.get_vendor_main(mac=addr2)
-                    rssi    = DataBase_WiFi.get_rssi(pkt=pkt, format=False)
-                    channel = DataBase_WiFi.get_channel(pkt=pkt)
+                    ssid        = pkt[Dot11Elt].info.decode(errors="ignore") or "Hidden SSID"
+                    vendor      = DataBase_WiFi.get_vendor_main(mac=addr2)
+                    rssi        = DataBase_WiFi.get_rssi(pkt=pkt, format=False)
+                    channel     = DataBase_WiFi.get_channel(pkt=pkt)
+                    encryption  = DataBase_WiFi.get_encryption(pkt=pkt)
+                    frequency   = DataBase_WiFi.get_frequency(freq=pkt[RadioTap].ChannelFrequency)
 
 
 
@@ -112,6 +114,8 @@ class WiFi_Snatcher():
                         cls.master[ssid] = {
                             "rssi": rssi,
                             "mac": addr2,
+                            "encryption": encryption,
+                            "frequency": frequency,
                             "channel": channel,
                             "vendor": vendor,
                             "clients": []

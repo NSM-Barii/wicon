@@ -8,7 +8,7 @@ from rich.live import Live
 
 # NETWORK IMPORTS
 from scapy.all import RadioTap
-from scapy.layers.dot11 import Dot11Elt
+from scapy.layers.dot11 import Dot11Elt, Dot11Beacon
 
 
 # ETC IMPORTS
@@ -180,47 +180,34 @@ class DataBase_WiFi():
 
 
     @staticmethod
-    def get_frequency(frequency):
-        """Get the frequency being used by the wifi"""
-
-
-        # 2.4GHZ OR 5GHZ
-        if  frequency in range(2400000, 2500000):
-            return "2.4 GHz"
-        
-        elif frequency in range(5000000, 5800000):
-            return "5 GHz"
-        
-        elif frequency in range(5900000, 7200000):
-            return "6 GHz"
-
-
-        else:
-            return frequency
-    
-
-    @staticmethod
     def _get_channel_from_radiotap(pkt):
-        """This is when first attempt fails"""
+        """fallback method"""
 
 
         if pkt.haslayer(RadioTap):
-            try:
 
+            try:
                 freq = pkt[RadioTap].ChannelFrequency
-                if freq: return DataBase_WiFi._freq_to_channel(freq)
-            
+
+                if freq:
+                    # 2.4 GHz band
+                    if 2412 <= freq <= 2484:
+                        return (freq - 2407) // 5
+                    # 5 GHz band (partial support)
+                    elif 5180 <= freq <= 5825:
+                        return (freq - 5000) // 5
+                    # 6 GHz and others can be added as needed
+                    return None
+                
             except: pass
-        
-        return False
+        return None
 
 
     @classmethod
     def get_channel(cls, pkt):
         """This will be used to get the ssid channel"""
 
-        if not pkt.haslayer(Dot11Elt): return False
-         
+
         elt = pkt[Dot11Elt]
         channel = 0
 
@@ -236,9 +223,41 @@ class DataBase_WiFi():
 
 
             channel = DataBase_WiFi._get_channel_from_radiotap(pkt=pkt)
-
+            #console.print(channel); return channel
 
         return channel
+
+    
+    @classmethod
+    def get_frequency(cls, freq):
+        """This will return frequency"""
+
+
+        if freq in range(2412, 2472): return "2.4 GHz"
+        elif freq in range(5180, 5825): return "5 GHz"
+        else: return "6 GHz"
+
+
+    @classmethod
+    def get_encryption(cls, pkt):
+
+        if not pkt.haslayer(Dot11Beacon):
+            return None
+
+        cap = pkt.sprintf("{Dot11Beacon:%Dot11Beacon.cap%}")
+        if "privacy" not in cap: return "OPEN"
+
+        rsn = pkt.getlayer(Dot11Elt, ID=48)
+        wpa = pkt.getlayer(Dot11Elt, ID=221)
+
+        if rsn:
+            rsn_info = rsn.info
+            if b'\x00\x0f\xac\x08' in rsn_info: return "WPA3"
+            return "WPA2"
+
+        if wpa and b"WPA" in wpa.info:return "WPA"
+        return "WEP"
+
 
     
     @staticmethod
