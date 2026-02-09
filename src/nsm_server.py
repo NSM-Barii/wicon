@@ -24,7 +24,6 @@ CONSOLE = Console()
 class HTTP_Handler(SimpleHTTPRequestHandler):
     """This class will handle/server http traffic"""
 
-
     def log_message(self, fmt, *args):
         """Silence HTTP server logs"""
         pass
@@ -64,6 +63,10 @@ class Web_Server():
     @staticmethod
     def start(address="0.0.0.0", port=8000):
         """This will start the web server"""
+
+
+        gui_path = str(Path(__file__).parent.parent / "gui")
+        os.chdir(gui_path)
 
         server = HTTPServer(server_address=(address, port), RequestHandlerClass=HTTP_Handler)
         CONSOLE.print(f"[bold green][+] Successfully Launched web server")
