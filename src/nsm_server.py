@@ -43,7 +43,10 @@ class HTTP_Handler(SimpleHTTPRequestHandler):
                 self.send_header("Access-Control-Allow-Origin", '*')
                 self.end_headers()
 
-                self.wfile.write(json.dumps(WiFi_Snatcher.master).encode())
+                data = WiFi_Snatcher.master
+                CONSOLE.print(f"[bold cyan][DEBUG] Sending master data: {data}")
+                CONSOLE.print(f"[bold cyan][DEBUG] Data type: {type(data)}, Keys: {list(data.keys()) if isinstance(data, dict) else 'N/A'}")
+                self.wfile.write(json.dumps(data).encode())
 
             else:
                 # Serve static files from gui directory
