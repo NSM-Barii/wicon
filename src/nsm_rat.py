@@ -85,7 +85,7 @@ class WiFi_Snatcher():
 
 
             if pkt.haslayer(Dot11Beacon):
-                
+
 
                 try:
                     addr1 = pkt[Dot11].addr1 if pkt[Dot11].addr1 != "ff:ff:ff:ff:ff:ff" else False
@@ -110,7 +110,8 @@ class WiFi_Snatcher():
                 
 
                 try:
-                    if ssid not in cls.ssids:
+                    
+                    if not any(stored_ssid == ssid for stored_ssid, _ in cls.ssids):
                         cls.master[ssid] = {
                             "rssi": rssi,
                             "mac": addr2,
@@ -118,88 +119,90 @@ class WiFi_Snatcher():
                             "frequency": frequency,
                             "channel": channel,
                             "vendor": vendor,
+                            "traffic": 0,
                             "clients": []
                         }
 
-                        cls.ssids.append(ssid)
+                        cls.ssids.append((ssid, addr2))
+                        console.print(f"[bold green][+] SSID:[bold yellow] {ssid} --> {addr2}")
                     
                 except Exception as e: console.print(f"[bold red][-] Beacon Error: {e}"); cls.sniff = False
 
 
 
-            elif pkt.haslayer(Dot11): 
+            elif pkt.haslayer(Dot11) and pkt.type == 2: 
+
 
                 addr1 = pkt[Dot11].addr1 if pkt[Dot11].addr1 != "ff:ff:ff:ff:ff:ff" else False
                 addr2 = pkt[Dot11].addr2 if pkt[Dot11].addr2 != "ff:ff:ff:ff:ff:ff" else False
 
-                try:
-                    if pkt.haslayer(Dot11Elt): ssid = pkt[Dot11Elt].info.decode(errors="ignore") or "Hidden SSID" 
-                except Exception as e: console.print(f"[bold red]Exception Error:[bold yellow] {e}")
-            
 
-                if cls.hide:
-                    t = [s for s in ssid]
-                    if len(t) >= 4: 
-                        ssid = (f"{t[0]}{t[1]}{t[2]}{t[3]}")
-            
-                for key, _ in cls.master.items():
+                for id, id_mac in cls.ssids:
+                    
+                    if id_mac == addr2 or id_mac == addr1: go = True; ssid = id
+                    #print(id, id_mac, go)
 
-                    if key == ssid: go = True
+                    if go:
+                        cls.master[id]["traffic"] +=1
+
             
                 if not go: return
             
 
                 vendor  = DataBase_WiFi.get_vendor_main(mac=addr1 or addr2)
                 channel = DataBase_WiFi.get_channel(pkt=pkt)
+                #console.print(vendor, channel)
                 
-                
-                with LOCK:
-                    try:
+          
+                try:
 
-                        if addr1 not in cls.macs and addr1 and ssid:
-                                
-                            data = (
-                                addr1,
-                                channel,
-                                vendor,
-                            )
+                    if addr1 not in cls.macs and addr1 and ssid:
+                        console.print("heyyy")
                             
-                            cls.master[ssid]["clients"].append(data)
-                            cls.macs.append(addr1)
-
-
-                            console.print(f"[bold green][+] addr1: {addr1} -> ")
+                        data = (
+                            addr1,
+                            channel,
+                            vendor,
+                        )
                         
-
-                        
-                        if addr2 not in cls.macs and addr2 and ssid:
-                            
-                            data = (
-                                addr2,
-                                channel,
-                                vendor,
-                            )
-                            
-                            cls.master[ssid]["clients"].append(data)
-                            cls.macs.append(addr2)
+                        cls.master[ssid]["clients"].append(data)
+                        cls.macs.append(addr1)
 
 
-                            console.print(f"[bold green][+] addr2: {addr2} -> ")
-                        
-                            #console.print(cls.master)
+                        console.print(f"[bold green][+] addr1: {addr1} -> ")
                     
 
-                    except Exception as e: console.print(f"[bold red][-] GO Error: {e}"); cls.sniff = False
+                    
+                    if addr2 not in cls.macs and addr2 and ssid:
+                        
+                        data = (
+                            addr2,
+                            channel,
+                            vendor,
+                        )
+                        
+                        cls.master[ssid]["clients"].append(data)
+                        cls.macs.append(addr2)
+
+
+                        console.print(f"[bold green][+] addr2: {addr2} -> ")
+                    
+                        #console.print(cls.master)
+                
+
+                except Exception as e: console.print(f"[bold red][-] GO Error: {e}"); cls.sniff = False
 
  
         if not cls.sniff: return Exception 
+        #print(pkt)
         cls.executor.submit(parser, pkt); cls.thread_count += 1
+        #parser(pkt=pkt)
 
                 
     
     @classmethod
                 
-    def main(cls, iface):
+    def main(cls, iface, ):
         """This will run class wide logic"""
 
 
@@ -210,12 +213,10 @@ class WiFi_Snatcher():
         cls.sniff = True
         cls.macs = []
         cls.ssids = []
-        cls.executor = ThreadPoolExecutor(max_workers=10)
+        cls.executor = ThreadPoolExecutor(max_workers=80)
     
- 
-         
-        if not iface: console.print(f"[bold red][-] Enter a iface goofy!")
-        Utilities.channel_hopper(iface="wlan1", verbose=False)
+
+        Utilities.channel_hopper(iface=iface, verbose=False)
         threading.Thread(target=WiFi_Snatcher._sniffer, args=(iface, ), daemon=True).start()
 
 
