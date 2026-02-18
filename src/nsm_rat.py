@@ -11,7 +11,7 @@ import pyfiglet
 
 # NETWORK IMPORTS
 from scapy.all import sniff, RadioTap
-from scapy.layers.dot11 import Dot11, Dot11Beacon, Dot11AssoReq, Dot11ProbeReq, Dot11Elt
+from scapy.layers.dot11 import Dot11, Dot11Beacon, Dot11AssoReq, Dot11ProbeReq, Dot11Elt, Dot11Deauth
 
 
 # ETC IMPORTS 
@@ -73,6 +73,7 @@ class WiFi_Snatcher():
             c1 = "bold green"
             c2 = "bold blue"
             c3 = "bold yellow"
+            c4 = "bold red"
 
             go = False
             ssid = False
@@ -84,7 +85,17 @@ class WiFi_Snatcher():
             if not cls.sniff: return
 
 
-            if pkt.haslayer(Dot11Beacon):
+            if pkt.haslayer(Dot11Deauth) and cls.mode == 1:
+
+                addr1 = pkt[Dot11].addr1 
+                addr2 = pkt[Dot11].addr2 
+
+                channel  = DataBase_WiFi.get_channel(pkt=pkt)
+
+                console.print(f"[{c4}][*] Deauth Attack detected[/{c4}] - Dst: {addr1} Src: {addr2} - Channel: {channel}")
+
+
+            elif pkt.haslayer(Dot11Beacon):
 
 
                 try:
@@ -130,7 +141,7 @@ class WiFi_Snatcher():
 
 
 
-            elif pkt.haslayer(Dot11) and pkt.type == 2: 
+            elif pkt.haslayer(Dot11) and pkt.type == 2 and cls.mode == 2: 
 
 
                 addr1 = pkt[Dot11].addr1 if pkt[Dot11].addr1 != "ff:ff:ff:ff:ff:ff" else False
@@ -202,11 +213,12 @@ class WiFi_Snatcher():
     
     @classmethod
                 
-    def main(cls, iface, ):
+    def main(cls, iface, mode):
         """This will run class wide logic"""
 
 
         # VARS
+        cls.mode = mode
         cls.master = {}
         cls.hide = False
         cls.thread_count = 0
@@ -217,7 +229,9 @@ class WiFi_Snatcher():
     
 
         Utilities.channel_hopper(iface=iface, verbose=False)
-        threading.Thread(target=WiFi_Snatcher._sniffer, args=(iface, ), daemon=True).start()
+        WiFi_Snatcher._sniffer(iface=iface
+        3258+)
+        #threading.Thread(target=WiFi_Snatcher._sniffer, args=(iface, ), daemon=True).start()
 
 
 
