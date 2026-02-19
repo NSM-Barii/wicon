@@ -1,5 +1,6 @@
 scapy
 
+requests
 pathlib
 manuf
 rich

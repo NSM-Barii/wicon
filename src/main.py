@@ -28,15 +28,17 @@ class Main_Thread():
         # CHOOSE THE ARGUMENT
         parser = argparse.ArgumentParser()
         parser.add_argument("-d", action="store_true", help="This is to filter and look for deauth attacks")
-        parser.add_argument("-s", action="store_true", help="This will set no filter and will instead passively sniff and process all Dot11 Traffic")
+        parser.add_argument("-a", action="store_true", help="This will set no filter and will instead passively sniff and process all Dot11 Traffic")
         parser.add_argument("-i", help="This will be what the user will call upon to pass a interface (Thats in monitor mode)")
+        parser.add_argument("-s", help="Server IP for led lights")
 
 
         args = parser.parse_args()
 
-        scan   = args.s or False
+        scan   = args.a or False
         iface  = args.i or False
         deauth = args.d or False
+        server_ip = args.s or False
 
         
         if scan:
@@ -53,7 +55,7 @@ class Main_Thread():
             Web_Server.start()
         
 
-        elif deauth: WiFi_Snatcher.main(iface=iface, mode=1)
+        elif deauth: WiFi_Snatcher.main(iface=iface, server_ip=server_ip, mode=1)
 
 
 

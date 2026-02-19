@@ -40,6 +40,9 @@ class WiFi_Snatcher():
 
         loops = 0
 
+        console.print(f"[bold green][*] Launching Sniffer Daemon[/bold green] - Mode: {cls.mode}")
+        Utilities.touch_esp(color="green", blinks=5, delay=0.5)
+
         
         while cls.sniff:
 
@@ -87,15 +90,25 @@ class WiFi_Snatcher():
 
             if pkt.haslayer(Dot11Deauth) and cls.mode == 1:
 
-                addr1 = pkt[Dot11].addr1 
-                addr2 = pkt[Dot11].addr2 
-
-                channel  = DataBase_WiFi.get_channel(pkt=pkt)
-
-                console.print(f"[{c4}][*] Deauth Attack detected[/{c4}] - Dst: {addr1} Src: {addr2} - Channel: {channel}")
+                console.print(pkt)
 
 
-            elif pkt.haslayer(Dot11Beacon):
+                try:
+
+
+                    addr1 = pkt[Dot11].addr1 
+                    addr2 = pkt[Dot11].addr2 
+
+                    channel  = False
+    
+                    console.print(f"[{c4}][*] Deauth Attack detected[/{c4}] - Src: {addr2}  Dst: {addr1} - Channel: {channel}")
+                    Utilities.touch_esp(color="red", blinks=5, delay=0.5)
+                
+
+                except Exception as e: console.print(f"[bold red][-] Exception Error:[bold yellow] {e   }")
+
+
+            elif pkt.haslayer(Dot11Beacon) and cls.mode == 2:
 
 
                 try:
@@ -213,7 +226,7 @@ class WiFi_Snatcher():
     
     @classmethod
                 
-    def main(cls, iface, mode):
+    def main(cls, iface, server_ip, mode):
         """This will run class wide logic"""
 
 
@@ -227,10 +240,9 @@ class WiFi_Snatcher():
         cls.ssids = []
         cls.executor = ThreadPoolExecutor(max_workers=80)
     
-
-        Utilities.channel_hopper(iface=iface, verbose=False)
-        WiFi_Snatcher._sniffer(iface=iface
-        3258+)
+        Utilities.server_ip = server_ip
+        Utilities.channel_hopper(iface=iface, verbose=False, inter=.25)
+        WiFi_Snatcher._sniffer(iface=iface)
         #threading.Thread(target=WiFi_Snatcher._sniffer, args=(iface, ), daemon=True).start()
 
 

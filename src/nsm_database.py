@@ -12,7 +12,7 @@ from scapy.layers.dot11 import Dot11Elt, Dot11Beacon
 
 
 # ETC IMPORTS
-import subprocess, threading, time
+import subprocess, threading, time, requests
 
 
 # FILE IMPORTS
@@ -27,9 +27,12 @@ LOCK = threading.Lock()
 class Utilities():
 
     hop = True
+    busy = False
+    server_ip = False
+    
 
     @classmethod
-    def channel_hopper(cls, iface, set_channel=False, verbose=False):
+    def channel_hopper(cls, iface, set_channel=False, verbose=False, inter=0.25):
         """This method will be responsible for automatically hopping channels"""
 
 
@@ -39,7 +42,6 @@ class Utilities():
 
         def hopper():
 
-            delay = 0.25
             all_hops = [1, 6, 11, 36, 40, 44, 48, 149, 153, 157, 161]
             
             #iface = Settings.get_json()['iface']
@@ -88,7 +90,7 @@ class Utilities():
                             console.print(f"[bold green]Hopping on Channel:[bold yellow] {channel}")
 
                         # DELAY
-                        time.sleep(delay)
+                        time.sleep(inter)
                     
                     except Exception as e:
                         console.print(f"[bold red]Exception Error:[bold yellow] {e}")
@@ -98,7 +100,39 @@ class Utilities():
         threading.Thread(target=hopper, args=(), daemon=True).start()
         cls.hop = True
 
+    
+    @classmethod
+    def touch_esp(cls, color, blinks=5, delay=0.2, timeout=3):
+        """This will change colors on esp"""
 
+        if cls.busy: return False
+        with LOCK:
+            if not cls.server_ip: return False
+            
+            cls.busy = True
+        
+            while blinks > 0:
+                try:
+
+                    url = f"http://{cls.server_ip}/?color={color}"
+                    response = requests.post(url=url, timeout=timeout)
+
+                    if response.status_code in [200,204]: 
+                        console.print(f"[bold green][+] Successfully pushed:[/bold green] {color} --> {cls.server_ip}  <-->  {url}")
+
+                        blinks -= 1; time.sleep(delay)
+                        url = f"http://{cls.server_ip}/?color=off"
+                        response = requests.post(url=url, timeout=timeout)
+                        time.sleep(delay)
+
+                    else: console.print(f"[bold red][-] Failed to push to LED Server:[bold yellow] Status code: {response.status_code}")
+                
+                except Exception as e: console.print(f"[bold red]Exception Error:[bold yellow] {e}")
+
+
+            cls.busy = False
+
+        
 
 
 
@@ -213,18 +247,22 @@ class DataBase_WiFi():
 
 
         while isinstance(elt, Dot11Elt):
-
-
-            if elt.ID == 3:
-                channel = elt.info[0]
-                return channel
             
-            elt = elt.payload
+            try:
 
 
-            channel = DataBase_WiFi._get_channel_from_radiotap(pkt=pkt)
-            #console.print(channel); return channel
+                if elt.ID == 3:
+                    channel = elt.info[0]
+                    return channel
+                
+                elt = elt.payload
 
+
+                channel = DataBase_WiFi._get_channel_from_radiotap(pkt=pkt)
+                #console.print(channel); return channel
+
+            except Exception as e: console.print(f"[bold red][-] Exception Error:[bold yellow] {e   }")
+        
         return channel
 
     
@@ -257,7 +295,6 @@ class DataBase_WiFi():
 
         if wpa and b"WPA" in wpa.info:return "WPA"
         return "WEP"
-
 
     
     @staticmethod
