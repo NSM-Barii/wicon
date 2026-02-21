@@ -42,7 +42,8 @@ class HTTP_Handler(SimpleHTTPRequestHandler):
                 self.end_headers()
 
                 data = WiFi_Snatcher.master
-                CONSOLE.print(data)
+                CONSOLE.print(f"[bold cyan]API HIT - Data: {data}")
+                CONSOLE.print(f"[bold cyan]Type: {type(data)}, Length: {len(data)}")
                 self.wfile.write(json.dumps(data).encode())
 
             else:

@@ -90,7 +90,7 @@ class WiFi_Snatcher():
 
             if pkt.haslayer(Dot11Deauth) and cls.mode == 1:
 
-                console.print(pkt)
+                #console.print(pkt)
 
 
                 try:
@@ -100,9 +100,12 @@ class WiFi_Snatcher():
                     addr2 = pkt[Dot11].addr2 
 
                     channel  = False
-    
+                    
+                    cls.deauths[addr2]["deauths"] += 1
+                    cls.deauths[addr2]["dst"] = {"src": addr2, 
+                                                 "dst": addr1}
                     console.print(f"[{c4}][*] Deauth Attack detected[/{c4}] - Src: {addr2}  Dst: {addr1} - Channel: {channel}")
-                    Utilities.touch_esp(color="red", blinks=5, delay=0.5)
+                    if not Utilities.busy: Utilities.touch_esp(color="red", blinks=5, delay=0.5)
                 
 
                 except Exception as e: console.print(f"[bold red][-] Exception Error:[bold yellow] {e   }")
@@ -232,10 +235,11 @@ class WiFi_Snatcher():
 
         # VARS
         cls.mode = mode
-        cls.master = {}
         cls.hide = False
         cls.thread_count = 0
         cls.sniff = True
+        cls.deauths = {}
+        cls.master = {}
         cls.macs = []
         cls.ssids = []
         cls.executor = ThreadPoolExecutor(max_workers=80)
